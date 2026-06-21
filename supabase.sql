@@ -172,3 +172,48 @@ create table user_achievements(
     achievement_id uuid not null references achievements(id) on delete cascade,
     earned_at timestamptz default now()
 );
+CREATE TABLE player_historical_stats (
+    id uuid primary key default gen_random_uuid(),
+    player_id uuid not null references players(id) on delete cascade,
+    format text not null, -- e.g., 'Tests', 'ODIs', 'T20Is', 'FC', 'List A', 'T20s'
+    
+    -- General
+    matches integer default 0,
+    
+    -- Batting
+    batting_inns integer default 0,
+    batting_no integer default 0,
+    batting_runs integer default 0,
+    batting_hs text, -- text because it can contain '*' (e.g., '254*')
+    batting_ave numeric(6,2),
+    batting_bf integer default 0,
+    batting_sr numeric(6,2),
+    batting_100s integer default 0,
+    batting_50s integer default 0,
+    batting_4s integer default 0,
+    batting_6s integer default 0,
+    
+    -- Fielding
+    fielding_ct integer default 0,
+    fielding_st integer default 0,
+    
+    -- Bowling
+    bowling_inns integer default 0,
+    bowling_balls integer default 0,
+    bowling_runs integer default 0,
+    bowling_wkts integer default 0,
+    bowling_bbi text,
+    bowling_bbm text,
+    bowling_ave numeric(6,2),
+    bowling_econ numeric(6,2),
+    bowling_sr numeric(6,2),
+    bowling_4w integer default 0,
+    bowling_5w integer default 0,
+    bowling_10w integer default 0,
+
+    created_at timestamptz default now(),
+    updated_at timestamptz default now(),
+    
+    -- Ensure we don't have duplicate formats for the same player
+    UNIQUE(player_id, format)
+);
