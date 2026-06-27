@@ -19,6 +19,21 @@ type ctxKey string
 // CtxUserID is the context key under which the authenticated user's UUID is stored.
 const CtxUserID ctxKey = "user_id"
 
+// ValidateToken validates a raw JWT string and returns the subject (user UUID).
+// Used by the /ws handler which reads the token from a query param rather than
+// a header, because the browser WebSocket API cannot send custom headers.
+func ValidateToken(tokenStr, jwtSecret string) (string, error) {
+	claims, err := parseHS256JWT(tokenStr, []byte(jwtSecret))
+	if err != nil {
+		return "", err
+	}
+	sub, _ := claims["sub"].(string)
+	if sub == "" {
+		return "", errors.New("missing sub claim")
+	}
+	return sub, nil
+}
+
 // RequireAuth returns middleware that validates a Supabase-issued HS256 JWT.
 // On success it injects the caller's UUID into the request context under CtxUserID.
 // The secret must be the SUPABASE_JWT_SECRET from the project settings.

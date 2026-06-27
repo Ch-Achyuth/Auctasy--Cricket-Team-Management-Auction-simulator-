@@ -17,6 +17,9 @@ type Config struct {
 	JWTSecret string
 	// Port the HTTP server listens on. Defaults to 8080.
 	Port string
+	// FrontendURL is the allowed WebSocket origin (e.g. http://localhost:8000).
+	// Leave empty in dev to allow all origins.
+	FrontendURL string
 }
 
 // Load reads the .env file and returns a populated Config struct.
@@ -29,6 +32,7 @@ func Load() (*Config, error) {
 		RedisURL:    os.Getenv("REDIS_URL"),
 		JWTSecret:   os.Getenv("SUPABASE_JWT_SECRET"),
 		Port:        os.Getenv("PORT"),
+		FrontendURL: os.Getenv("FRONTEND_URL"),
 	}
 
 	if cfg.SupabaseURL == "" || cfg.SupabaseKey == "" {

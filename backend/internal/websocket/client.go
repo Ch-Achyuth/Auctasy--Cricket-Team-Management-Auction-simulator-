@@ -28,13 +28,6 @@ const (
 	sendBufSize = 256
 )
 
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-	// CheckOrigin must be tightened in production (validate against allowed origins).
-	CheckOrigin: func(r *http.Request) bool { return true },
-}
-
 // Client represents a single browser's WebSocket connection to one league room.
 //
 // A Client is a read-only observer of the auction:
@@ -54,9 +47,19 @@ type Client struct {
 // with the hub. The caller is responsible for JWT authentication and must supply
 // the verified userID and leagueID — this function trusts them unconditionally.
 //
-// Intended to be called from an HTTP handler after the RequireAuth middleware
-// has already validated the token.
-func ServeWS(hub *Hub, w http.ResponseWriter, r *http.Request, userID, leagueID string) {
+// allowedOrigin is the permitted value of the Origin header (e.g. "http://localhost:8000").
+// Pass an empty string in development to allow all origins.
+func ServeWS(hub *Hub, w http.ResponseWriter, r *http.Request, userID, leagueID, allowedOrigin string) {
+	upgrader := websocket.Upgrader{
+		ReadBufferSize:  1024,
+		WriteBufferSize: 1024,
+		CheckOrigin: func(r *http.Request) bool {
+			if allowedOrigin == "" {
+				return true
+			}
+			return r.Header.Get("Origin") == allowedOrigin
+		},
+	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("[ws] upgrade failed user=%s league=%s: %v", userID, leagueID, err)
@@ -139,21 +142,10 @@ func (c *Client) writePump() {
 				c.conn.WriteMessage(websocket.CloseMessage, []byte{})
 				return
 			}
-
-			w, err := c.conn.NextWriter(websocket.TextMessage)
-			if err != nil {
-				return
-			}
-			w.Write(msg)
-
-			// Coalesce any additional queued messages into the same WebSocket frame
-			// to reduce syscall overhead under bursty load (e.g. rapid bidding).
-			for n := len(c.send); n > 0; n-- {
-				w.Write([]byte{'\n'})
-				w.Write(<-c.send)
-			}
-
-			if err := w.Close(); err != nil {
+			// Each AuctionEvent is its own WebSocket text frame so the client can
+			// JSON.parse(e.data) safely. Coalescing multiple JSON objects into one
+			// frame with '\n' separators breaks the client-side parser.
+			if err := c.conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 				return
 			}
 
