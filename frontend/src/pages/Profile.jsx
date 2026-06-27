@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useToast } from '../components/Toast'
 import ProfileCard from '../components/ProfileCard'
@@ -9,8 +8,7 @@ import ProfileCard from '../components/ProfileCard'
  * Email and username are read-only. Display name and bio are editable.
  */
 export default function Profile() {
-  const { user } = useAuth()
-  const { profile, updateProfile } = useProfile(user)
+  const { profile, updateProfile } = useProfile()
   const { showToast, ToastContainer } = useToast()
 
   const [editing, setEditing] = useState(false)

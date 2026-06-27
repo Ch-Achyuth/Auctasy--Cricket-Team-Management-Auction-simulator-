@@ -2,20 +2,23 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import ProfileCard from '../components/ProfileCard'
-import WaitingListCounter from '../components/WaitingListCounter'
 
 /**
  * Dashboard — main page after login.
- * Shows profile card, navigation links, and the waiting list counter.
+ * Shows a welcome, the profile card, and navigation.
  */
 export default function Dashboard() {
-  const { user, signOut } = useAuth()
-  const { profile } = useProfile(user)
+  const { signOut } = useAuth()
+  const { profile } = useProfile()
+
+  const firstName = (profile?.display_name || '').split(' ')[0]
 
   return (
     <div className="premium-center">
       <h1 className="project-title">Auctasy</h1>
-      <p className="subtitle">Under Development</p>
+      <p className="subtitle">
+        {firstName ? `Welcome back, ${firstName}.` : 'Welcome back.'}
+      </p>
 
       {profile && <ProfileCard profile={profile} />}
 
@@ -27,8 +30,6 @@ export default function Dashboard() {
           Logout
         </button>
       </div>
-
-      <WaitingListCounter />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 
 /**
  * Toast — lightweight notification component.
@@ -33,15 +33,18 @@ export default function Toast({ message, type = 'success', onClose }) {
  */
 export function useToast() {
   const [toasts, setToasts] = useState([])
+  // Monotonic id source — two toasts in the same millisecond can't collide
+  // on their React key the way Date.now() allowed.
+  const nextId = useRef(0)
 
-  const showToast = (message, type = 'success') => {
-    const id = Date.now()
+  const showToast = useCallback((message, type = 'success') => {
+    const id = nextId.current++
     setToasts((prev) => [...prev, { id, message, type }])
-  }
+  }, [])
 
-  const removeToast = (id) => {
+  const removeToast = useCallback((id) => {
     setToasts((prev) => prev.filter((t) => t.id !== id))
-  }
+  }, [])
 
   const ToastContainer = () => (
     <div className="toast-container">

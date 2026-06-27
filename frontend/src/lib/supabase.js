@@ -1,20 +1,16 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Reads from VITE_ prefixed env vars in frontend/.env
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://joxkejcuzqhkboowueba.supabase.co'
+// Both values come from the root .env (Vite reads VITE_* via envDir: '../').
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-if (!supabaseAnonKey) {
-  console.error(
-    '⚠️ VITE_SUPABASE_ANON_KEY is missing!\n' +
-    'Create a file at frontend/.env with:\n' +
-    'VITE_SUPABASE_URL=https://joxkejcuzqhkboowueba.supabase.co\n' +
-    'VITE_SUPABASE_ANON_KEY=your-anon-key-here'
+// Fail loud at startup rather than booting a broken client with a placeholder
+// key — a misconfigured deploy should be obvious, not silently half-working.
+if (!supabaseUrl || !supabaseAnonKey) {
+  throw new Error(
+    'Supabase config missing. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY ' +
+    'in the root .env (Vite reads them via envDir: "../").',
   )
 }
 
-// Use a placeholder key to prevent crash — auth calls will fail gracefully
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseAnonKey || 'missing-key-check-console'
-)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)

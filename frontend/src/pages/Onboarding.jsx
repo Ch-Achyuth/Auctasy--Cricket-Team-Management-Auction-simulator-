@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
 import { useToast } from '../components/Toast'
@@ -11,7 +11,7 @@ import { useToast } from '../components/Toast'
 export default function Onboarding() {
   const navigate = useNavigate()
   const { user } = useAuth()
-  const { createProfile, checkUsernameAvailable } = useProfile(user)
+  const { profile, createProfile, checkUsernameAvailable } = useProfile()
   const { showToast, ToastContainer } = useToast()
 
   // Prefill display name from Google account
@@ -21,6 +21,11 @@ export default function Onboarding() {
   const [username, setUsername] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
+
+  // A user who already has a profile must never see (or re-submit) onboarding —
+  // re-inserting would collide with their existing row. Declared after all hooks
+  // so the early return never changes hook order.
+  if (profile) return <Navigate to="/dashboard" replace />
 
   // Username validation: 3-20 chars, letters/numbers/underscores only
   const validateUsername = (value) => {

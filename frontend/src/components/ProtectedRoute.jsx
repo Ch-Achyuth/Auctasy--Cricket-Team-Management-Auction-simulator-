@@ -1,6 +1,7 @@
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 import { useProfile } from '../hooks/useProfile'
+import LoadingScreen from './LoadingScreen'
 
 /**
  * ProtectedRoute — route guard component.
@@ -11,16 +12,11 @@ import { useProfile } from '../hooks/useProfile'
  */
 export default function ProtectedRoute({ children, skipProfileCheck = false }) {
   const { user, loading: authLoading } = useAuth()
-  const { profile, loading: profileLoading } = useProfile(user)
+  const { profile, loading: profileLoading } = useProfile()
 
   // Show loading state while checking auth + profile
   if (authLoading || profileLoading) {
-    return (
-      <div className="premium-center">
-        <h1 className="project-title">Auctasy</h1>
-        <p className="subtitle" style={{ opacity: 0.5 }}>Loading...</p>
-      </div>
-    )
+    return <LoadingScreen />
   }
 
   // Not logged in → send to landing

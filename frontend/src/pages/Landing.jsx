@@ -1,9 +1,7 @@
 import { useAuth } from '../hooks/useAuth'
-import WaitingListCounter from '../components/WaitingListCounter'
 
 /**
  * Landing page — shown to unauthenticated users.
- * Preserves the original "Auctasy / Under Development" design.
  */
 export default function Landing() {
   const { signInWithGoogle } = useAuth()
@@ -11,7 +9,7 @@ export default function Landing() {
   return (
     <div className="premium-center">
       <h1 className="project-title">Auctasy</h1>
-      <p className="subtitle">Under Development</p>
+      <p className="subtitle">Build your dream squad. Bid live. Win your league.</p>
 
       <div className="auth-section">
         <button className="google-login-btn" onClick={signInWithGoogle}>
@@ -23,8 +21,6 @@ export default function Landing() {
           Login with Google
         </button>
       </div>
-
-      <WaitingListCounter />
     </div>
   )
 }

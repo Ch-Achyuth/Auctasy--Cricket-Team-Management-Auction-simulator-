@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/joho/godotenv"
 )
@@ -23,8 +24,13 @@ type Config struct {
 }
 
 // Load reads the .env file and returns a populated Config struct.
+//
+// The root .env is shared by Go and Vite, but `go run` forces the working
+// directory to backend/ (where go.mod lives). So we search the current
+// directory and walk up a few parents until a .env is found, letting the
+// server start regardless of where it is launched from.
 func Load() (*Config, error) {
-	_ = godotenv.Load()
+	loadDotEnv()
 
 	cfg := &Config{
 		SupabaseURL: os.Getenv("SUPABASE_URL"),
@@ -46,4 +52,26 @@ func Load() (*Config, error) {
 	}
 
 	return cfg, nil
+}
+
+// loadDotEnv looks for a .env file in the current directory and walks up to
+// 4 parent directories, loading the first one it finds. Missing .env is not
+// an error — real environments inject vars directly.
+func loadDotEnv() {
+	dir, err := os.Getwd()
+	if err != nil {
+		return
+	}
+	for i := 0; i < 5; i++ {
+		candidate := filepath.Join(dir, ".env")
+		if _, statErr := os.Stat(candidate); statErr == nil {
+			_ = godotenv.Load(candidate)
+			return
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			break // reached filesystem root
+		}
+		dir = parent
+	}
 }

@@ -4,7 +4,9 @@ import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Onboarding from './pages/Onboarding'
 import Profile from './pages/Profile'
+import NotFound from './pages/NotFound'
 import ProtectedRoute from './components/ProtectedRoute'
+import LoadingScreen from './components/LoadingScreen'
 
 /**
  * App — root component with routing.
@@ -18,12 +20,7 @@ export default function App() {
 
   // Show loading screen while checking auth (prevents flash)
   if (loading) {
-    return (
-      <div className="premium-center">
-        <h1 className="project-title">Auctasy</h1>
-        <p className="subtitle" style={{ opacity: 0.5 }}>Loading...</p>
-      </div>
-    )
+    return <LoadingScreen />
   }
 
   return (
@@ -65,8 +62,8 @@ export default function App() {
           }
         />
 
-        {/* Catch-all → home */}
-        <Route path="*" element={<Navigate to="/" replace />} />
+        {/* Unmatched routes → 404 */}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </BrowserRouter>
   )
