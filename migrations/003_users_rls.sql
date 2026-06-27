@@ -16,6 +16,14 @@
 -- ============================================================
 
 -- ─────────────────────────────────────────────────────────────
+-- 0. Add the missing bio column
+--    The Profile edit form and ProfileCard reference users.bio, but the
+--    column was never added to the schema — saving a profile would fail
+--    with "column bio does not exist".
+-- ─────────────────────────────────────────────────────────────
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS bio text;
+
+-- ─────────────────────────────────────────────────────────────
 -- 1. Enable RLS and define self-scoped policies
 -- ─────────────────────────────────────────────────────────────
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
