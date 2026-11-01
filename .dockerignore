@@ -1,0 +1,8 @@
+# Keep secrets, VCS metadata, and build artifacts out of any root-context build.
+.env
+.env.*
+.git
+.gitignore
+**/node_modules
+**/dist
+*.md

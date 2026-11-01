@@ -1,0 +1,14 @@
+# Secrets — never bake into the image
+.env
+.env.*
+
+# Version control
+.git
+.gitignore
+
+# Local artifacts
+*.log
+auctasy-server
+
+# CSV seed data — not needed by the server binary (use cmd/seed locally)
+data/
